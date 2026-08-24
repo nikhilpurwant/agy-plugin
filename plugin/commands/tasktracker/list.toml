@@ -1,0 +1,14 @@
+description = "List and filter tasks from TaskTracker via FastMCP tools. Usage: /tasktracker:list [optional status or search filter]"
+
+prompt = """
+List tasks from TaskTracker by calling the registered FastMCP `list_tasks` tool.
+
+User Arguments (optional filter/search): {{args}}
+
+## Workflow
+1. Parse `{{args}}` if provided (e.g. "in_progress", "critical", or search keyword).
+2. Call the FastMCP tool `list_tasks` directly with appropriate parameters (`status`, `priority`, or `search`).
+   - STRICT REQUIREMENT: Do NOT run `curl`, shell commands, or bash scripts. Use the `list_tasks` MCP tool.
+3. Present the tasks in a clean Markdown table with ID, Title, Status, Priority, and Assignee.
+4. Show a summary footer with total task count.
+"""

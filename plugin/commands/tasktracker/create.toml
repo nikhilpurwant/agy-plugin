@@ -1,0 +1,14 @@
+description = "Create a new task in TaskTracker via FastMCP tools. Usage: /tasktracker:create <task title>"
+
+prompt = """
+Create a new task in TaskTracker by calling the registered FastMCP `create_task` tool.
+
+Task Title / Input: {{args}}
+
+## Workflow
+1. If `{{args}}` is provided, use it as the task title. If omitted, prompt the user for task details.
+2. Ask or deduce appropriate priority (`low`, `medium`, `high`, `critical`) and assignee if mentioned.
+3. Call the FastMCP tool `create_task` directly with `title`, `description`, `priority`, and `assignee`.
+   - STRICT REQUIREMENT: Do NOT run `curl`, shell commands, or bash scripts. Use the `create_task` MCP tool.
+4. Confirm creation with the newly created task ID, status, and summary details.
+"""

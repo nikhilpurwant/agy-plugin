@@ -1,0 +1,15 @@
+description = "Display TaskTracker project metrics via FastMCP tools. Usage: /tasktracker:stats"
+
+prompt = """
+Retrieve and summarize overall project KPIs from TaskTracker by calling the FastMCP `get_task_metrics` tool.
+
+## Workflow
+1. Call the FastMCP tool `get_task_metrics` directly.
+   - STRICT REQUIREMENT: Do NOT run `curl`, shell commands, or bash scripts. Use the `get_task_metrics` MCP tool.
+2. Present a clean KPI dashboard in Markdown:
+   - Total Tasks
+   - Completion Rate (%)
+   - Breakdown by Status (Todo, In Progress, Done)
+   - Breakdown by Priority (Critical, High, Medium, Low)
+3. Provide high-level health insights and recommendations for the team.
+"""

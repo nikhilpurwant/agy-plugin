@@ -1,0 +1,5 @@
+{
+  "name": "tasktracker",
+  "version": "1.0.0",
+  "description": "TaskTracker Antigravity Plugin — manage tasks, triage issues, enforce workflow rules, and execute MCP actions through natural language, commands, and subagents."
+}

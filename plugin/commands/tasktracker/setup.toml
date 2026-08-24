@@ -1,0 +1,15 @@
+description = "Verify connectivity and health of the TaskTracker demo app and FastMCP server. Usage: /tasktracker:setup"
+
+prompt = """
+Verify that the TaskTracker application and FastMCP server are running and properly connected.
+
+## Workflow
+1. Call the FastMCP tool `check_api_health` directly.
+   - STRICT REQUIREMENT: Do NOT run `curl`, shell commands, or bash scripts. Use the FastMCP tool `check_api_health`.
+2. If healthy, verify task access by calling the FastMCP tool `list_tasks()`.
+3. If error occurs:
+   - Report whether the Flask app is reachable on `http://127.0.0.1:5050`.
+   - Report whether `API_KEY` is configured in `.env`.
+   - Provide command to start app (`cd app && uv run app.py`) and MCP server (`cd mcp && uv run server.py --transport http --port 8080`).
+4. Display a status checklist to the user.
+"""

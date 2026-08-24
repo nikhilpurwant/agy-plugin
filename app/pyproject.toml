@@ -1,0 +1,11 @@
+[project]
+name = "tasktracker-app"
+version = "0.1.0"
+description = "TaskTracker - Demo CRUD Application with JWT and API Key Authentication"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "flask>=3.0.0",
+    "pyjwt>=2.8.0",
+    "python-dotenv>=1.0.0",
+]

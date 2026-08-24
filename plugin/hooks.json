@@ -1,0 +1,48 @@
+{
+  "tasktracker-safety-gate": {
+    "PreToolUse": [
+      {
+        "matcher": "delete_task|run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ./scripts/pre_tool_check.py",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "tasktracker-audit-logger": {
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ./scripts/post_tool_audit.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "tasktracker-context-injector": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "python3 ./scripts/pre_invocation_context.py",
+        "timeout": 10
+      }
+    ]
+  },
+  "tasktracker-completion-verifier": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 ./scripts/stop_checker.py",
+        "timeout": 10
+      }
+    ]
+  }
+}

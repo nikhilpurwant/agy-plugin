@@ -1,0 +1,18 @@
+description = "Triage open, unassigned, and critical tasks in TaskTracker via FastMCP tools. Usage: /tasktracker:triage"
+
+prompt = """
+Perform an incident and backlog triage for TaskTracker tasks by calling the FastMCP tools.
+
+Arguments (optional focus area): {{args}}
+
+## Workflow
+1. Call the FastMCP tools `list_tasks(status="todo")` and `list_tasks(status="in_progress")`.
+   - STRICT REQUIREMENT: Do NOT run `curl`, shell commands, or bash scripts. Use the FastMCP tools.
+2. Filter for `priority: critical` and `priority: high` tasks.
+3. Identify unassigned blocker items.
+4. Output a structured triage report with:
+   - Summary of urgent items
+   - Recommended assignment plan
+   - Suggested execution order
+5. Offer to update tasks automatically using the FastMCP tool `update_task`.
+"""
