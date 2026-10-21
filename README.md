@@ -8,9 +8,9 @@ A complete, production-grade reference implementation demonstrating the end-to-e
 
 ```mermaid
 flowchart TD
-    subgraph AntigravityCLI["Google Antigravity Platform (CLI & IDE)"]
+    subgraph AntigravityPlatform["Google Antigravity Platform (CLI & IDE)"]
         PluginManifest["plugin.json (tasktracker)"]
-        SlashCmds["commands/tasktracker/*.toml\n(/tasktracker:list, /tasktracker:triage, etc.)"]
+        SlashCmds["commands/tasktracker/*.toml<br/>(/tasktracker:list, /tasktracker:triage, etc.)"]
         Skills["skills/* (Runbooks & SOPs)"]
         Subagents["agents/* (Specialized Personas)"]
         Hooks["hooks.json (Lifecycle Hooks)"]
@@ -28,15 +28,15 @@ flowchart TD
     end
 
     subgraph WebApp["TaskTracker Flask App (app/)"]
-        AuthSystem["Dual Authentication\n(JWT for UI / API Key for MCP)"]
+        AuthSystem["Dual Authentication<br/>(JWT for UI / API Key for MCP)"]
         RESTAPI["REST API (/api/tasks, /api/auth, /api/tasks/stats)"]
         InMemoryDB["In-Memory Thread-Safe Database"]
-        BootstrapUI["Pure Vanilla JS + Bootstrap 5 UI\n(index.html & login.html - No Custom CSS / Jinja)"]
+        BootstrapUI["Pure Vanilla JS + Bootstrap 5 UI<br/>(index.html & login.html - No Custom CSS / Jinja)"]
     end
 
-    AntigravityCLI -->|MCP Protocol over HTTP (:8080/mcp)| MCPServer
-    MCPServer -->|Authenticated REST Requests with X-API-Key| RESTAPI
-    BootstrapUI -->|JWT Bearer Token Requests| RESTAPI
+    MCPConfig -->|"MCP Protocol over HTTP (:8080/mcp)"| TransportHTTP
+    MCPTools -->|"Authenticated REST Requests with X-API-Key"| RESTAPI
+    BootstrapUI -->|"JWT Bearer Token Requests"| RESTAPI
     RESTAPI --> InMemoryDB
 ```
 
@@ -259,3 +259,84 @@ print('Tasks:', list_tasks())
 # 3. Validate Antigravity Plugin
 cd .. && agy plugin validate ./plugin
 ```
+
+---
+
+## ❓ Frequently Asked Questions (Q&A)
+
+<details>
+<summary><strong>Q: Generally when a command is provided to harness like you (AGY) how do you cycle through all these plugin components? Give an example involving each of the components and the path in which they are evaluated - Give me a table</strong></summary>
+
+### Answer
+
+When a command or prompt is provided to an Antigravity (`agy` / Jetski) harness, the system cycles through plugin components in a deterministic lifecycle spanning **Discovery**, **Invocation**, **Execution**, and **Termination**.
+
+---
+
+#### Example Scenario: Running `/tasktracker:triage critical blockers`
+
+Here is an end-to-end example showing how each plugin component is evaluated when a user runs the slash command `/tasktracker:triage critical blockers`:
+
+```text
+User Input: /tasktracker:triage critical blockers
+   │
+   ▼
+1. Plugin Manifest (plugin.json) & MCP Config (mcp_config.json) ──▶ Discovered & registered at startup
+   │
+   ▼
+2. Slash Command (commands/tasktracker/triage.toml) ─────────────▶ Interpolates {{args}} into prompt
+   │
+   ▼
+3. Pre-Invocation Hook (scripts/pre_invocation_context.py) ──────▶ Injects runtime context & status
+   │
+   ▼
+4. Rules (rules/AGENTS.md) ──────────────────────────────────────▶ Enforces constraints (e.g. FastMCP only)
+   │
+   ▼
+5. Skills (skills/incident-triage/SKILL.md) ────────────────────▶ Progressively loaded on demand
+   │
+   ▼
+6. Subagents (agents/qa-triage-agent.md) ────────────────────────▶ Invoked to isolate specialist triage work
+   │
+   ▼
+7. Pre-Tool Hook (scripts/pre_tool_check.py) ────────────────────▶ Intercepts tool calls (safety gate)
+   │
+   ▼
+8. FastMCP Server (mcp/server.py via mcp_config.json) ───────────▶ Executes tools/queries over HTTP
+   │
+   ▼
+9. Post-Tool Hook (scripts/post_tool_audit.py) ──────────────────▶ Logs tool telemetry and audit trail
+   │
+   ▼
+10. Stop Hook (scripts/stop_checker.py) ─────────────────────────▶ Verifies completion criteria before output
+```
+
+---
+
+#### Evaluation Path Table
+
+| Step | Component | Plugin File / Path | Lifecycle Stage | Evaluation & Action |
+|:---:|:---|:---|:---|:---|
+| **1** | **Plugin Manifest** | [plugin/plugin.json](plugin/plugin.json) | **Session Init / Discovery** | Harness discovers the plugin bundle, registers its namespace (`tasktracker`), and initializes its component directories. |
+| **2** | **MCP Config** | [plugin/mcp_config.json](plugin/mcp_config.json) | **Discovery / Tool Registration** | Harness connects to `http://127.0.0.1:8080/mcp`, discovers registered tools (`list_tasks`, `update_task`), prompts, and resources. |
+| **3** | **Rules** | [plugin/rules/AGENTS.md](plugin/rules/AGENTS.md) | **Context Assembly** | Loaded hierarchically into the system prompt. Enforces hard constraints (e.g., *strict prohibition on direct cURL/API calls; FastMCP only*). |
+| **4** | **Slash Command** | [plugin/commands/tasktracker/triage.toml](plugin/commands/tasktracker/triage.toml) | **Command Ingestion** | Harness routes `/tasktracker:triage`, expands template with arguments (`critical blockers`), and produces the user prompt. |
+| **5** | **Lifecycle Hook (PreInvocation)** | [plugin/hooks.json](plugin/hooks.json) & [plugin/scripts/pre_invocation_context.py](plugin/scripts/pre_invocation_context.py) | **Pre-Invocation** | Runs before LLM generation. Injects dynamic runtime state (e.g., server health, active plugin indicators) into context. |
+| **6** | **Skills** | [plugin/skills/incident-triage/SKILL.md](plugin/skills/incident-triage/SKILL.md) | **Model Reasoning (Progressive Disclosure)** | Only the skill name and description are in the initial prompt. When the agent recognizes triage is needed, it calls `view_file` to load the full runbook into context. |
+| **7** | **Subagents** | [plugin/agents/qa-triage-agent.md](plugin/agents/qa-triage-agent.md) | **Execution / Delegation** | If complex or long-running triage is required, the primary agent invokes `qa-triage-agent` via `invoke_subagent`, running in an isolated sub-conversation. |
+| **8** | **Lifecycle Hook (PreToolUse)** | [plugin/hooks.json](plugin/hooks.json) & [plugin/scripts/pre_tool_check.py](plugin/scripts/pre_tool_check.py) | **Pre-Tool Execution** | Matches tool calls against pattern `delete_task\|run_command`. Validates safety policy; can `allow`, `deny`, or prompt for user approval. |
+| **9** | **MCP Tools & Resources** | FastMCP server via [plugin/mcp_config.json](plugin/mcp_config.json) | **Tool Invocation** | Tool call `list_tasks(status="todo")` is dispatched to the FastMCP server over HTTP streamable transport and returns task records. |
+| **10** | **Lifecycle Hook (PostToolUse)** | [plugin/hooks.json](plugin/hooks.json) & [plugin/scripts/post_tool_audit.py](plugin/scripts/post_tool_audit.py) | **Post-Tool Execution** | Runs on `*` (all tools). Logs tool name, input arguments, execution duration, and outcome to an audit file. |
+| **11** | **Lifecycle Hook (Stop)** | [plugin/hooks.json](plugin/hooks.json) & [plugin/scripts/stop_checker.py](plugin/scripts/stop_checker.py) | **Termination** | Triggered when the agent decides to stop calling tools. Verifies completion criteria (e.g. no unresolved errors) before final response delivery. |
+| **12** | **Response Delivery** | Chat UI / CLI output | **Turn Completion** | Structured triage report (blockers, priority items, assignment suggestions) is presented to the user. |
+
+---
+
+#### Core Execution Principles
+
+1. **Progressive Disclosure**: Full runbooks ([`SKILL.md`](plugin/skills/incident-triage/SKILL.md)) are not dumped into the initial context; only lightweight metadata is loaded until activated on demand.
+2. **Rule Primacy**: Workspace rules ([`AGENTS.md`](plugin/rules/AGENTS.md)) take precedence over agent defaults and prompt instructions, preventing unsafe actions (e.g. prohibiting raw cURL commands).
+3. **Safety Gates via Hooks**: `PreToolUse` hooks intercept risky operations before they execute, while `Stop` hooks ensure verification runbooks were followed before the agent exits.
+
+</details>
+
