@@ -265,11 +265,11 @@ cd .. && agy plugin validate ./plugin
 ## ❓ Frequently Asked Questions (Q&A)
 
 <details>
-<summary><strong>Q: Generally when a command is provided to harness like you (AGY) how do you cycle through all these plugin components? Give an example involving each of the components and the path in which they are evaluated - Give me a table</strong></summary>
+<summary><strong>Q: Generally when a command is provided to harness like you (AGY) how does an agent you cycle through all these plugin components?</strong></summary>
 
 ### Answer
 
-When a command or prompt is provided to an Antigravity (`agy` / Jetski) harness, the system cycles through plugin components in a deterministic lifecycle spanning **Discovery**, **Invocation**, **Execution**, and **Termination**.
+When a command or prompt is provided to an Antigravity (`agy` / Antigravity IDE) harness, the system cycles through plugin components in a deterministic lifecycle spanning **Discovery**, **Invocation**, **Execution**, and **Termination**.
 
 ---
 
